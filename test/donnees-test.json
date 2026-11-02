@@ -1,0 +1,72 @@
+[
+  {
+    "id": "N01",
+    "nomCommun": "cacao",
+    "groupe": "angiosperme",
+    "nombrePlants": 30,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N02",
+    "nomCommun": "maïs",
+    "groupe": "angiosperme",
+    "nombrePlants": 45,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N03",
+    "nomCommun": "riz",
+    "groupe": "angiosperme",
+    "nombrePlants": 20,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N04",
+    "nomCommun": "tomate",
+    "groupe": "angiosperme",
+    "nombrePlants": 50,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N05",
+    "nomCommun": "goyavier",
+    "groupe": "angiosperme",
+    "nombrePlants": 25,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N06",
+    "nomCommun": "manguier",
+    "groupe": "angiosperme",
+    "nombrePlants": 18,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N07",
+    "nomCommun": "palmier à huile",
+    "groupe": "angiosperme",
+    "nombrePlants": 12,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N08",
+    "nomCommun": "citronnier",
+    "groupe": "angiosperme",
+    "nombrePlants": 22,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N09",
+    "nomCommun": "pin",
+    "groupe": "gymnosperme",
+    "nombrePlants": 8,
+    "dateReleve": "2026-10-24"
+  },
+  {
+    "id": "N10",
+    "nomCommun": "cycas",
+    "groupe": "gymnosperme",
+    "nombrePlants": 10,
+    "dateReleve": "2026-10-24"
+  }
+]
