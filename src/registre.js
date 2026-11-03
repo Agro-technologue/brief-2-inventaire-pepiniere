@@ -15,8 +15,8 @@ export function formaterPlant(plant) {
 // ou 'Aucun plant enregistré.' si la liste est vide.
 export function listerPlants(plants) {
 if (plants.length === 0) {
-  return 'Aucun plant entregistré.';
-}
+  return 'Aucun plant enregistré.';
+} 
 return plants.map(formaterPlant).join('\n');
 }
 
@@ -32,16 +32,61 @@ export function trouverParId(plants, id) {
 // Règles : id obligatoire et unique · nomCommun obligatoire · groupe présent dans GROUPES
 // · nombrePlants nombre ENTIER positif ou nul · dateReleve réelle au format AAAA-MM-JJ.
 export function verifierPlant(saisie, plants) {
-  throw new Error('TODO : coder verifierPlant dans src/registre.js');
+  const erreurs = [];
+  
+ // Verification de l'id
+  if (!saisie.id || saisie.id.trim() === '') {
+    erreurs.push("L'identifiant est obligatoire.");
+  } else if (trouverParId(plants, saisie.id.trim())) {
+    erreurs.push("L'identifiant doit être unique.");
+  }
+   // Verification du nom commun
+  if (!saisie.nomCommun || saisie.nomCommun.trim() === ``) {
+    erreurs.push("Le nom commun est obligation");
+  }
+   // Verification du groupe botanique
+  if (!GROUPES.includes(saisie.groupe)) {
+    erreurs.push("Le groupe botanique saisi est incorret}.");
+  }
+   // Verification du nombre de plants
+  const nombre = Number(saisie.nombrePlants);
+  
+  if (
+    !Number.isInteger(nombre) || 
+    nombre < 0 ||
+    String(saisie.nombrePlants ?? '').trim() === ''
+  ) {
+    erreurs.push('Le nombre de plants doit être un entier positif ou nul.');
+  }
+
+  // Verification de la date
+  if (!estDateValide(saisie.dateReleve)) {
+    erreurs.push(`La date de relevé doit exister et suivre le format AAAA-MM-JJ.`);
+  }
+  return erreurs;
 }
 
 // Fabrique le plant à enregistrer à partir d'une saisie VALIDE : nombrePlants devient un nombre.
 export function creerPlant(saisie) {
-  throw new Error('TODO : coder creerPlant dans src/registre.js');
+  return {
+    id: saisie.id.trim(),
+    nomCommun: saisie.nomCommun.trim(),
+    groupe: saisie.groupe.trim(),
+    nombrePlants: Number(saisie.nombrePlants),
+    dateReleve: saisie.dateReleve
+  };
 }
 
 // Ajoute la saisie à l'inventaire si elle est valide (verifierPlant, puis creerPlant).
 // Renvoie les erreurs : [] si le plant a été ajouté ; sinon les messages, et rien n'est ajouté.
 export function ajouterPlant(plants, saisie) {
-  throw new Error('TODO : coder ajouterPlant dans src/registre.js');
+  const erreurs = verifierPlant(saisie, plants);
+
+  if(erreurs.length > 0) {
+    return erreurs;
+  }
+  
+  const plant = creerPlant(saisie);
+  plants.push(plant);
+  return [];
 }
