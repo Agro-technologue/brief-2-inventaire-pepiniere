@@ -17,7 +17,7 @@ export function listerPlants(plants) {
 if (plants.length === 0) {
   return 'Aucun plant entregistré.';
 }
-return plants.map(formaterPlant).join('/n');
+return plants.map(formaterPlant).join('\n');
 }
 
 // Renvoie le plant qui a ce code (identifiant), ou undefined s'il n'existe pas.
