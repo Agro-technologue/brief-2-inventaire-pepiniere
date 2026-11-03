@@ -8,13 +8,16 @@ export const GROUPES = ['angiosperme', 'gymnosperme'];
 // Renvoie une ligne de texte qui décrit le plant.
 // Exemple : 'N09 | pin | gymnosperme | 8 plants | 2026-10-24'
 export function formaterPlant(plant) {
-  throw new Error('TODO : coder formaterPlant dans src/registre.js');
+  return `${plant.id} | ${plant.nomCommun} | ${plant.groupe} | ${plant.nombrePlants} plants | ${plant.dateReleve}`;
 }
 
 // Renvoie un texte avec un plant par ligne (lignes séparées par '\n'),
 // ou 'Aucun plant enregistré.' si la liste est vide.
 export function listerPlants(plants) {
-  throw new Error('TODO : coder listerPlants dans src/registre.js');
+if (plants.length === 0) {
+  return 'Aucun plant entregistré.';
+}
+return plants.map(formaterPlant).join('/n');
 }
 
 // Renvoie le plant qui a ce code (identifiant), ou undefined s'il n'existe pas.
