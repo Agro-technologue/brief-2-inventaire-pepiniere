@@ -22,7 +22,7 @@ return plants.map(formaterPlant).join('\n');
 
 // Renvoie le plant qui a ce code (identifiant), ou undefined s'il n'existe pas.
 export function trouverParId(plants, id) {
-  throw new Error('TODO : coder trouverParId dans src/registre.js');
+  return plants.find(plant => plant.id === id);
 }
 
 // Contrôle une saisie AVANT de l'ajouter. Tous les champs arrivent sous forme de TEXTE :
