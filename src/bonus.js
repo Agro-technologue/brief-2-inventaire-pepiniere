@@ -40,7 +40,7 @@ export function modifierPlant(plants, id, champ, valeur) {
   }
 
   // Copie pour valider sans toucher à l'original.
-  
+
   const saisie = { ...plant, [champ]: valeur };
   const autres = plants.filter(element => element.id !== id);
   const erreurs = verifierPlant(saisie, autres);
@@ -61,12 +61,29 @@ export function modifierPlant(plants, id, champ, valeur) {
 // Renvoie une COPIE triée par nombre de plants décroissant.
 // Deux plants de même nombre gardent leur ordre d'origine. Le tableau reçu ne change pas.
 export function trierParNombrePlantsDecroissant(plants) {
-  throw new Error('TODO Bonus : coder trierParNombrePlantsDecroissant dans src/bonus.js');
+  return [...plants].sort((a, b) => b.nombrePlants - a.nombrePlants);
 }
+
 
 // Renvoie { groupe, plants } pour le groupe botanique qui a le plus de plants au total,
 // le premier rencontré en cas d'égalité, ou null si l'inventaire est vide.
 // Exemple : groupeLePlusFourni(donnees) → { groupe: 'angiosperme', plants: 222 }
 export function groupeLePlusFourni(plants) {
-  throw new Error('TODO Bonus : coder groupeLePlusFourni dans src/bonus.js');
+
+  if (plants.length === 0) {
+    return null;
+  }
+
+  const totaux = new Map();
+  for (const plant of plants) {
+    totaux.set(plant.groupe, (totaux.get(plant.groupe) ?? 0) + plant.nombrePlants);
+  }
+
+  let meilleur = null;
+  for (const [groupe, total] of totaux) {
+    if (meilleur === null || total > meilleur.plants) {
+      meilleur = { groupe, plants: total };
+    }
+  }
+  return meilleur;
 }
