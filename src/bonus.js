@@ -18,6 +18,7 @@ export function supprimerPlant(plants, id) {
   const [plantSupprime] = plants.splice(index, 1);
   return plantSupprime;
 }
+  
 
 // Modifie un champ d'un plant. valeur arrive sous forme de TEXTE, comme dans le menu.
 // Renvoie un tableau d'erreurs : [] si la modification est faite.
@@ -25,8 +26,37 @@ export function supprimerPlant(plants, id) {
 // CHAMPS_MODIFIABLES · valeur refusée par les règles de l'ajout. S'il y a une erreur, rien ne change.
 // nombrePlants est enregistré comme un nombre.
 export function modifierPlant(plants, id, champ, valeur) {
-  throw new Error('TODO Bonus : coder modifierPlant dans src/bonus.js');
+  
+  const plant = trouverParId(plants, id);
+
+  if (!plant) {
+    return ['Identifiant inconnu.'];
+  }
+  if (champ === 'id') {
+    return ["L'identifiant n'est pas modifiable."];
+  }
+  if (!CHAMPS_MODIFIABLES.includes(champ)) {
+    return ['Champ non modifiable.'];
+  }
+
+  // Copie pour valider sans toucher à l'original.
+  
+  const saisie = { ...plant, [champ]: valeur };
+  const autres = plants.filter(element => element.id !== id);
+  const erreurs = verifierPlant(saisie, autres);
+
+  if (erreurs.length > 0) {
+    return erreurs;
+  }
+
+  if (champ === 'nombrePlants') {
+    plant.nombrePlants = versNombre(valeur);
+  } else {
+    plant[champ] = valeur.trim();
+  }
+  return [];
 }
+
 
 // Renvoie une COPIE triée par nombre de plants décroissant.
 // Deux plants de même nombre gardent leur ordre d'origine. Le tableau reçu ne change pas.
