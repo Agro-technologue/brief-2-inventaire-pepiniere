@@ -23,6 +23,8 @@ function afficherMenu() {
   console.log('3. Rechercher (code, nom, groupe)');
   console.log('4. Trier (nombre de plants)');
   console.log('5. Synthèse des quantités');
+  console.log('6. Supprimer un plant');
+  console.log('7. Modifier un plant');
   console.log('0. Quitter');
 }
 
@@ -86,8 +88,170 @@ function lister(plants) {
   console.log(listerPlants(plants));
 }
 
-function actionPasEncoreCodee(nom) {
-  throw new Error(`TODO : ${nom} n'est pas encore codé(e).`);
+// Choix 3 : rechercher par code, par nom ou par groupe botanique.
+async function rechercher(plants) {
+  console.log('--- Rechercher ---');
+  console.log('1. Par code');
+  console.log('2. Par nom');
+  console.log('3. Par groupe botanique');
+  const mode = await demander('Votre choix : ');
+  if (mode === null) return;
+
+  switch (mode.trim()) {
+    case '1': {
+      const id = await demander('Code du plant (ex. N09) : ');
+      if (id === null) return;
+      const plant = trouverParId(plants, id.trim().toUpperCase());
+      console.log(plant ? formaterPlant(plant) : 'Aucun plant avec ce code.');
+      break;
+    }
+    case '2': {
+      const texte = await demander('Nom (ou début du nom) : ');
+      if (texte === null) return;
+      const resultats = rechercherParNom(plants, texte.trim());
+      console.log(resultats.length > 0 ? listerPlants(resultats) : 'Aucun résultat.');
+      break;
+    }
+    case '3': {
+      const groupe = await demander(`Groupe botanique (${GROUPES.join(' ou ')}) : `);
+      if (groupe === null) return;
+      const resultats = filtrerParGroupe(plants, groupe.trim().toLowerCase());
+      console.log(resultats.length > 0 ? listerPlants(resultats) : 'Aucun résultat.');
+      break;
+    }
+    default:
+      console.log('Choix inconnu. Tapez 1, 2 ou 3.');
+  }
+}
+
+// Choix 4 : afficher l'inventaire trié par nombre de plants.
+function trier(plants) {
+  console.log('--- Inventaire trié par nombre de plants ---');
+  console.log(listerPlants(trierParNombrePlants(plants)));
+}
+
+// Choix 5 : synthèse des quantités.
+function synthese(plants) {
+  console.log('--- Synthèse des quantités ---');
+  if (plants.length === 0) {
+    console.log('L\'inventaire est vide : rien à synthétiser.');
+    return;
+  }
+
+  console.log(`Stock total : ${totalPlants(plants)} plant(s) pour ${plants.length} espèce(s).`);
+
+  console.log('Par groupe botanique :');
+  for (const groupe of GROUPES) {
+    const especes = plants.filter((plant) => plant.groupe === groupe);
+    const nombre = especes.reduce((somme, plant) => somme + plant.nombrePlants, 0);
+    console.log(`  - ${groupe} : ${especes.length} espèce(s), ${nombre} plant(s)`);
+  }
+
+  const plusAbondante = especeLaPlusAbondante(plants);
+  if (plusAbondante) {
+    console.log(`Espèce la plus abondante : ${plusAbondante.id} (${plusAbondante.nomCommun}), ${plusAbondante.nombrePlants} plant(s).`);
+  }
+
+  const faibles = stocksFaibles(plants);
+  if (faibles.length === 0) {
+    console.log(`Aucun stock faible (seuil : ${SEUIL_STOCK_FAIBLE} plants ou moins).`);
+  } else {
+    console.log(`Stocks faibles (${SEUIL_STOCK_FAIBLE} plants ou moins) :`);
+    for (const plant of faibles) {
+      console.log(`  - ${plant.id} (${plant.nomCommun}) : ${plant.nombrePlants} plant(s)`);
+    }
+  }
+}
+
+// Choix 6 (bonus) : supprimer une espèce de l'inventaire.
+async function supprimer(plants) {
+  console.log('--- Supprimer un plant ---');
+  const saisieId = await demander('Code du plant à supprimer (ex. N09) : ');
+  if (saisieId === null) return;
+
+  const id = saisieId.trim().toUpperCase();
+  const position = plants.findIndex((plant) => plant.id === id);
+  if (position === -1) {
+    console.log(`Aucun plant avec le code ${id}.`);
+    return;
+  }
+
+  const plant = plants[position];
+  const confirmation = await demander(`Supprimer ${plant.id} (${plant.nomCommun}, ${plant.nombrePlants} plant(s)) ? (o/n) : `);
+  if (confirmation === null) return;
+  if (confirmation.trim().toLowerCase() !== 'o') {
+    console.log('Suppression annulée.');
+    return;
+  }
+
+  plants.splice(position, 1);
+  try {
+    await enregistrerJson(FICHIER_DONNEES, plants);
+  } catch (erreur) {
+    // L'enregistrement a échoué : on remet le plant à sa place.
+    plants.splice(position, 0, plant);
+    throw erreur;
+  }
+  console.log(`Plant ${plant.id} supprimé. L'inventaire compte ${plants.length} espèce(s).`);
+}
+
+function dateValide(texte) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(texte)) return false;
+  const date = new Date(`${texte}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === texte;
+}
+
+// Choix 7 (bonus) : modifier le nombre de plants et la date du relevé d'une espèce.
+async function modifier(plants) {
+  console.log('--- Modifier un plant ---');
+  const saisieId = await demander('Code du plant à modifier (ex. N09) : ');
+  if (saisieId === null) return;
+
+  const id = saisieId.trim().toUpperCase();
+  const plant = plants.find((element) => element.id === id);
+  if (!plant) {
+    console.log(`Aucun plant avec le code ${id}.`);
+    return;
+  }
+
+  console.log(`Plant ${plant.id} (${plant.nomCommun}) : ${plant.nombrePlants} plant(s), relevé du ${plant.dateReleve}.`);
+  console.log('Laissez vide et tapez Entrée pour garder la valeur actuelle.');
+
+  const nouveauNombre = await demander('Nouveau nombre de plants (entier) : ');
+  if (nouveauNombre === null) return;
+  const nouvelleDate = await demander('Nouvelle date du relevé (AAAA-MM-JJ) : ');
+  if (nouvelleDate === null) return;
+
+  const erreurs = [];
+  const nombreTexte = nouveauNombre.trim();
+  const dateTexte = nouvelleDate.trim();
+  if (nombreTexte !== '' && !/^\d+$/.test(nombreTexte)) {
+    erreurs.push('Le nombre de plants doit être un entier positif ou nul.');
+  }
+  if (dateTexte !== '' && !dateValide(dateTexte)) {
+    erreurs.push('La date doit exister et avoir le format AAAA-MM-JJ.');
+  }
+  if (erreurs.length > 0) {
+    console.log('Modification refusée :');
+    for (const message of erreurs) {
+      console.log(`  - ${message}`);
+    }
+    return;
+  }
+
+  const ancien = { nombrePlants: plant.nombrePlants, dateReleve: plant.dateReleve };
+  if (nombreTexte !== '') plant.nombrePlants = Number(nombreTexte);
+  if (dateTexte !== '') plant.dateReleve = dateTexte;
+
+  try {
+    await enregistrerJson(FICHIER_DONNEES, plants);
+  } catch (erreur) {
+    // L'enregistrement a échoué : on remet les anciennes valeurs.
+    plant.nombrePlants = ancien.nombrePlants;
+    plant.dateReleve = ancien.dateReleve;
+    throw erreur;
+  }
+  console.log(`Plant ${plant.id} modifié : ${plant.nombrePlants} plant(s), relevé du ${plant.dateReleve}.`);
 }
 
 async function main() {
@@ -117,13 +281,19 @@ async function main() {
             lister(plants);
             break;
           case '3':
-            actionPasEncoreCodee('la recherche');
+            await rechercher(plants);
             break;
           case '4':
-            actionPasEncoreCodee('le tri');
+            trier(plants);
             break;
           case '5':
-            actionPasEncoreCodee('la synthèse');
+            synthese(plants);
+            break;
+          case '6':
+            await supprimer(plants);
+            break;
+          case '7':
+            await modifier(plants);
             break;
           case '0':
             console.log('Au revoir !');
@@ -134,11 +304,7 @@ async function main() {
         }
       } catch (erreur) {
         const message = String(erreur?.message ?? erreur);
-        if (message.startsWith('TODO')) {
-          console.log(`À compléter : ${message}`);
-        } else {
-          console.log(`Erreur inattendue : ${message}`);
-        }
+        console.log(`Erreur inattendue : ${message}`);
       }
     }
   } finally {
